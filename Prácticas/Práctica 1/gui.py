@@ -474,7 +474,7 @@ class PantallaCreditos:
         Button(self.frame, text="Regresar", font=('Roboto', 20), fg='#000000',
                bg='#EEEEEE', width=8, command=self.Regresar).place(x=950, y=75)
 
-        Label(self.frame, text="Créditos Aprobados:",
+        Label(self.frame, text="Cambio Calificación 1:",
               font=('Roboto', 25), fg='#EEEEEE', bg='#2D4263',
               width=15).place(x=25, y=150)
         self.aprobadostxt = Label(self.frame, text=DB.getCreditosAprobados(),

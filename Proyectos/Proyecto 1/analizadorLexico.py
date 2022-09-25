@@ -171,10 +171,53 @@ def analizar(texto):
     variable = parse(input)
     getER = True
 
+    generarReportes()
+
     for var in variable:
         for var_ in var:
             print(var_.ejecutar(getER))
 
     for var in errores_:
         print(var.toString())
+
+def generarReportes():
+    # Errores
+    html = '''<h1 style="text-align: center;"><span style="text-decoration: underline;"><strong>ERRORES</strong></span><span style="text-decoration: underline;"><strong></strong></span><span style="text-decoration: underline;"><strong></strong></span></h1>
+<p><span style="text-decoration: underline;"><strong></strong></span></p>'''
+    num = 0
+    if errores_.__len__() > 0:
+        num += 1
+        html += '''<table border="1" style="height: 45px; width: 84.2478%; border-collapse: collapse; margin-left: auto; margin-right: auto;">
+<tbody>'''
+        for error in errores_:
+            html += '''<tr style="height: 18px;">
+<td style="width: 20%s; text-align: center; height: 18px;">''' + str(num) + '''</td>
+<td style="width: 20%ds; text-align: center; height: 18px;">''' + error.lexema + '''</td>
+<td style="width: 20%ds; text-align: center; height: 18px;">''' + error.tipo + '''</td>
+<td style="width: 20%; text-align: center; height: 18px;">''' + str(error.columna) + '''</td>
+<td style="width: 20%; text-align: center; height: 18px;">''' + str(error.fila) + '''</td>
+</tr>'''
+        html += '''</tbody>
+    </table>'''
+    else:
+        html += '''<h2 style="text-align: center;">No se encontraron errores.</h2>
+<table border="1" style="border-collapse: collapse; width: 100%; height: 36px;">'''
+    f = open('ERRORES_202100154.html', 'w')
+    f.write(html)
+
+
+    # Resultados
+    html2 = '''<h1 style="text-align: center; color:blue"><span style="font-size: 16pt;"></span><span style="text-decoration: underline;"><strong>RESULTADOS</strong></span></h1>'''
+    contador = 0
+    variable = parse(input)
+    for var in variable:
+        for var_ in var:
+            contador += 1
+            html2 += ''' <p style="text-align: center;"><span style="font-size: 16pt; color: red;"> Operacion ''' + str(contador) + '''</span></p>
+<p style="text-align: center;"><span style="font-size: 12pt; color: green;">''' + var_.ejecutar(True) + ''' = ''' + str(var_.ejecutar(False)) + '''</span></p>'''
+
+    f = open('RESULTADOS_202100154.html', 'w')
+    f.write(html2)
+
+
 

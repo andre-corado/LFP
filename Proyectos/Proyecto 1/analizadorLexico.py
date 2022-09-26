@@ -3,34 +3,91 @@ from Clases import *
 
 # Tokens
 tokens = (
+    'RESTILO',
+    'ROPERACIONES',
     'RTIPO',
+    'RTEXTO',
+    'RTIPO2',
+    'RTEXTO2',
+    'RFUNCION',
+    'RTITULO',
+    'RDESCRIPCION',
+    'RCONTENIDO',
     'ROPERACION',
+    'RCOLOR',
+    'RTAMANIO',
     'RNUMERO',
     'RSUMA',
     'RRESTA',
     'RMULTIPLICACION',
     'RDIVISION',
+    'RINVERSO',
+    'RPOTENCIA',
+    'RRAIZ',
+    'RSENO',
+    'RCOSENO',
+    'RTANGENTE',
+    'RESCRIBIR',
     'LLAA',
     'LLAC',
     'IGUAL',
     'DIV',
     'ENTERO',
     'DECIMAL',
+    'CADENA',
+    'CORA',
+    'CORC',
+    'RAZUL',
+    'RVERDE',
+    'RROJO',
+    'RNEGRO',
+    'RBLANCO',
+    'RGRIS',
+    'RCELESTE',
+    'RCAFE',
 )
 
 # Lexemas
 t_ignore = ' \t'
-t_RTIPO       = r'Tipo'
-t_ROPERACION  = r'Operacion'
-t_RSUMA       = r'SUMA'
-t_RRESTA       = r'RESTA'
+t_RESTILO = r'Estilo'
+t_RTIPO2 = r'TIPO'
+t_RTEXTO2 = r'TEXTO'
+t_RTIPO = r'Tipo'
+t_RTEXTO = r'Texto'
+t_RFUNCION = r'Funcion'
+t_RTITULO = r'Titulo'
+t_RDESCRIPCION = r'Descripcion'
+t_RCONTENIDO = r'Contenido'
+t_ROPERACION = r'Operacion'
+t_ROPERACIONES = r'Operaciones'
+t_RCOLOR = r'Color'
+t_RTAMANIO = r'Tamanio'
+t_RSUMA = r'SUMA'
+t_RRESTA = r'RESTA'
 t_RMULTIPLICACION = r'MULTIPLICACION'
 t_RDIVISION = r'DIVISION'
-t_RNUMERO     = r'Numero'
-t_LLAA        = r'<'
-t_LLAC        = r'>'
-t_IGUAL       = r'='
-t_DIV         = r'/'
+t_RINVERSO = r'INVERSO'
+t_RPOTENCIA = r'POTENCIA'
+t_RRAIZ = r'RAIZ'
+t_RSENO = r'SENO'
+t_RCOSENO = r'COSENO'
+t_RTANGENTE = r'TANGENTE'
+t_RESCRIBIR = r'ESCRIBIR'
+t_RNUMERO = r'Numero'
+t_LLAA = r'<'
+t_LLAC = r'>'
+t_IGUAL = r'='
+t_DIV = r'/'
+t_CORA = r'\['
+t_CORC = r'\]'
+t_RAZUL = r'AZUL'
+t_RVERDE = r'VERDE'
+t_RROJO = r'ROJO'
+t_RNEGRO = r'NEGRO'
+t_RBLANCO = r'BLANCO'
+t_RGRIS = r'GRIS'
+t_RCELESTE = r'CELESTE'
+t_RCAFE = r'CAFE'
 
 
 # Gramática para números
@@ -52,6 +109,17 @@ def t_ENTERO(t):
     except ValueError:
         print("Valor entero demasiado largo %d", t.value)
         t.value = 0
+    return t
+
+
+def t_CADENA(t):
+    r'(\".*?\")'
+    t.value = t.value[1:-1]  # Se remueven las comillas de la entrada
+    t.value = t.value.replace('\\t', '\t')
+    t.value = t.value.replace('\\n', '\n')
+    t.value = t.value.replace('\\"', '\"')
+    t.value = t.value.replace("\\'", "\'")
+    t.value = t.value.replace('\\\\', '\\')
     return t
 
 
@@ -81,7 +149,6 @@ def find_column(inp, tk):
 lexer = lex.lex()
 
 
-
 # ANALIZADOR SINTACTICO
 # Definicion de la gramatica
 
@@ -89,6 +156,7 @@ def p_init(t):
     'init : instrucciones'
     t[0] = t[1]
     return t[0]
+
 
 def p_instrucciones_lista(t):
     '''instrucciones    : instrucciones instruccion
@@ -99,36 +167,125 @@ def p_instrucciones_lista(t):
         t[1].append(t[2])
         t[0] = t[1]
 
+
 def p_instruccion(t):
-    'instruccion  : LLAA RTIPO LLAC instrucciones_2 LLAA DIV RTIPO LLAC'
+    '''instruccion  : INSTIPO
+                    | INSTEXTO
+                    | INSTFUNCION
+                    | INSTESTILO
+
+
+'''
+    t[0] = t[1]
+
+
+def p_instruccionTipo(t):
+    'INSTIPO    :   LLAA RTIPO LLAC instrucciones_2 LLAA DIV RTIPO LLAC'
     t[0] = t[4]
+
+
+def p_instruccionTexto(t):
+    'INSTEXTO   :   LLAA RTEXTO LLAC CADENA LLAA DIV RTEXTO LLAC'
+    t[0] = Texto(t[4], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccionFuncion(t):
+    'INSTFUNCION    :   LLAA RFUNCION IGUAL RESCRIBIR LLAC instrucciones_2 LLAA DIV RFUNCION LLAC'
+    t[0] = Funcion(t[6][0], t[6][1], t[6][2], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccionEstilo(t):
+    'INSTESTILO     :   LLAA RESTILO LLAC instrucciones_2 LLAA DIV RESTILO LLAC'
+    t[0] = t[4]
+
 
 def p_instrucciones_2_lista(t):
     'instrucciones_2 : instrucciones_2 instruccion_2'
     t[1].append(t[2])
     t[0] = t[1]
 
+
 def p_instrucciones_2_instruccion(t):
     'instrucciones_2 :  instruccion_2'
     t[0] = [t[1]]
 
+
 def p_instruccion_2(t):
     'instruccion_2  :  LLAA ROPERACION IGUAL tipo LLAC instrucciones_2 LLAA DIV ROPERACION LLAC'
-    t[0] = Aritmeticas(t[6][0], t[6][1], t[4], t.lineno(1), find_column(input,t.slice[1]))
+    if len(t[6]) == 2:
+        t[0] = Aritmeticas(t[6][0], t[6][1], t[4], t.lineno(1), find_column(input, t.slice[1]))
+    else:
+        t[0] = Aritmeticas(t[6][0], None, t[4], t.lineno(1), find_column(input, t.slice[1]))
+
 
 def p_instruccion_2_decimal(t):
     'instruccion_2 : LLAA RNUMERO LLAC DECIMAL LLAA DIV RNUMERO LLAC '
-    t[0] = Numero(float(t[4]), t.lineno(1), find_column(input,t.slice[1]))
+    t[0] = Numero(float(t[4]), t.lineno(1), find_column(input, t.slice[1]))
+
 
 def p_instruccion_2_entero(t):
     'instruccion_2 : LLAA RNUMERO LLAC ENTERO LLAA DIV RNUMERO LLAC '
-    t[0] = Numero(int(t[4]), t.lineno(1), find_column(input,t.slice[1]))
+    t[0] = Numero(int(t[4]), t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccion_2_texto(t):
+    'instruccion_2 : CADENA'
+    t[0] = Numero(t[4], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccion_2_titulo(t):
+    'instruccion_2 : LLAA RTITULO LLAC ROPERACIONES LLAA DIV RTITULO LLAC'
+    t[0] = t[4]
+
+
+def p_instruccion_2_descripcion(t):
+    'instruccion_2 : LLAA RDESCRIPCION LLAC CORA RTEXTO2 CORC LLAA DIV RDESCRIPCION LLAC'
+    t[0] = t[5]
+
+
+def p_instruccion_2_contenido(t):
+    'instruccion_2 : LLAA RCONTENIDO LLAC CORA RTIPO2 CORC LLAA DIV RCONTENIDO LLAC'
+    t[0] = t[5]
+
+
+def p_instruccion_2_titulo_2(t):
+    'instruccion_2 : LLAA RTITULO RCOLOR IGUAL COLOR RTAMANIO IGUAL ENTERO DIV LLAC'
+    t[0] = Estilo(t[2], t[5], t[8], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccion_2_descripcion_2(t):
+    'instruccion_2 : LLAA RDESCRIPCION RCOLOR IGUAL COLOR RTAMANIO IGUAL ENTERO DIV LLAC'
+    t[0] = Estilo(t[2], t[5], t[8], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_instruccion_2_contenido_2(t):
+    'instruccion_2 : LLAA RCONTENIDO RCOLOR IGUAL COLOR RTAMANIO IGUAL ENTERO DIV LLAC'
+    t[0] = Estilo(t[2], t[5], t[8], t.lineno(1), find_column(input, t.slice[1]))
+
+
+def p_color(t):
+    '''COLOR    : RAZUL
+                | RVERDE
+                | RROJO
+                | RNEGRO
+                | RBLANCO
+                | RGRIS
+                | RCELESTE
+                | RCAFE'''
+    t[0] = t[1]
+
 
 def p_tipo(t):
     '''tipo :   RSUMA
             |   RRESTA
             |   RMULTIPLICACION
             |   RDIVISION
+            |   RINVERSO
+            |   RRAIZ
+            |   RPOTENCIA
+            |   RSENO
+            |   RCOSENO
+            |   RTANGENTE
     '''
     if t[1] == 'SUMA':
         t[0] = Operador.SUMA
@@ -138,26 +295,44 @@ def p_tipo(t):
         t[0] = Operador.MULTIPLICACION
     elif t[1] == 'DIVISION':
         t[0] = Operador.DIVISION
+    elif t[1] == 'INVERSO':
+        t[0] = Operador.INVERSO
+    elif t[1] == 'RAIZ':
+        t[0] = Operador.RAIZ
+    elif t[1] == 'POTENCIA':
+        t[0] = Operador.POTENCIA
+    elif t[1] == 'SENO':
+        t[0] = Operador.SENO
+    elif t[1] == 'COSENO':
+        t[0] = Operador.COSENO
+    elif t[1] == 'TANGENTE':
+        t[0] = Operador.TANGENTE
+
 
 # Aqui reconoce un error de sintaxis, pueden crear un array e irlos agregando
 # para obtenerlos después
 def p_error(t):
     print("Error de sintaxis en '%s'" % t.value)
 
+
 # Esta función busca la columna en la que se encuentra el token o lexema
 def find_column(inp, tk):
     try:
-        line_start = inp.rfind('\n',0,tk.lexpos) + 1
+        line_start = inp.rfind('\n', 0, tk.lexpos) + 1
         return (tk.lexpos - line_start) + 1
     except:
         return 0
 
+
 import ply.yacc as yacc
+
 parser = yacc.yacc()
+
 
 def parse(input):
     lexer.lineno = 1
     return parser.parse(input)
+
 
 genAux = Generador()
 generador = genAux.getInstance()
@@ -173,12 +348,19 @@ def analizar(texto):
 
     generarReportes()
 
-    for var in variable:
-        for var_ in var:
-            print(var_.ejecutar(getER))
+    if variable:
+        for var in variable:
+            if isinstance(var, list):
+                for var_ in var:
+                    print(var_.ejecutar(True))
+            elif isinstance(var, Texto):
+                print(var.ejecutar(False))
+            elif isinstance(var, Funcion):
+                print(var.ejecutar(False))
 
     for var in errores_:
         print(var.toString())
+
 
 def generarReportes():
     # Errores
@@ -205,19 +387,94 @@ def generarReportes():
     f = open('ERRORES_202100154.html', 'w')
     f.write(html)
 
-
     # Resultados
-    html2 = '''<h1 style="text-align: center; color:blue"><span style="font-size: 16pt;"></span><span style="text-decoration: underline;"><strong>RESULTADOS</strong></span></h1>'''
+    html2 = ''
     contador = 0
     variable = parse(input)
-    for var in variable:
-        for var_ in var:
-            contador += 1
-            html2 += ''' <p style="text-align: center;"><span style="font-size: 16pt; color: red;"> Operacion ''' + str(contador) + '''</span></p>
-<p style="text-align: center;"><span style="font-size: 12pt; color: green;">''' + var_.ejecutar(True) + ''' = ''' + str(var_.ejecutar(False)) + '''</span></p>'''
+    if variable:
+        txtTitulo = colorTitulo = sizeTitulo = colorDesc = sizeDesc = colorContenido = sizeContenido = texto = None
+        for var in variable:
+            if isinstance(var, Texto):
+                texto = var.ejecutar(False)
+            elif isinstance(var, Funcion):
+                datosVar = var.ejecutar(False)
+                x2 = {'TEXTO', 'TIPO'}
+                x2 ^= datosVar
+                txtTitulo = x2.pop()
+                print(txtTitulo)
+
+            elif isinstance(var, list):
+                ''' for var_ in var:
+                                   if datosVar[3] == 'Titulo':
+                    colorTitulo = traducirColor(datosVar[1])
+                    sizeTitulo = str(datosVar[2])
+                elif datosVar[3] == 'Contenido':
+                    colorContenido = traducirColor(datosVar[1])
+                    sizeContenido = str(datosVar[2])
+                elif datosVar[2] == 'Descripcion':
+                    colorDesc = traducirColor(datosVar[1])
+                    sizeDesc = str(datosVar[2])'''
+                pass
+        html2 += '<p style="text-align: center;">' + txtTitulo + '<span style="font-size: ' + '16' + 'pt; color: ' + 'red' + ';"></span></p>'
+        for var in variable:
+            if isinstance(var, list):
+                for var_ in var:
+                    if (isinstance(var_, Estilo)):
+                        if 'Titulo' in var:
+                            datosVar = var_.ejecutar(False)
+                            datosVar.remove('Titulo')
+                            for x in datosVar:
+                                if (isinstance(x,str)):
+                                    colorTitulo = traducirColor(x)
+                                else:
+                                    sizeTitulo = str(x)
+                        elif 'Descripcion' in var:
+                            datosVar = var_.ejecutar(False)
+                            datosVar.remove('Descripcion')
+                            for x in datosVar:
+                                if (isinstance(x,str)):
+                                    colorDesc = traducirColor(x)
+                                else:
+                                    sizeDesc = str(x)
+                        elif 'Contenido' in var:
+                            datosVar = var_.ejecutar(False)
+                            datosVar.remove('Contenido')
+                            for x in datosVar:
+                                if (isinstance(x, str)):
+                                    colorContenido = traducirColor(x)
+                                else:
+                                    sizeContenido = str(x)
+                    else:
+                        pass
+        for var in variable:
+            if isinstance(var, list):
+                for var_ in var:
+                    if (isinstance(var_, Estilo)):
+                        pass
+                    else:
+                        contador += 1
+                        html2 += '<p style="text-align: center;">' + 'Operación No.' + str(contador) + '<span style="font-size: ' + sizeContenido + 'pt; color: ' + colorContenido + ';"></span></p>'
+                        html2 += '<p style="text-align: center;">' + str(var_.ejecutar(True)) + ' = ' + str(var_.ejecutar(False)) + '<span style="font-size: ' + sizeContenido + 'pt; color: ' + colorContenido + ';">sad</span></p>'
+
+
+
 
     f = open('RESULTADOS_202100154.html', 'w')
     f.write(html2)
 
 
-
+def traducirColor(color):
+    if color == 'ROJO':
+        return 'RED'
+    elif color == 'AZUL':
+        return 'BLUE'
+    elif color == 'VERDE':
+        return 'GREEN'
+    elif color == 'NEGRO':
+        return 'BLACK'
+    elif color == 'GRIS':
+        return 'GRAY'
+    elif color == 'CELESTE':
+        return 'LIGHTBLUE'
+    elif color == 'CAFE':
+        return 'BROWN'

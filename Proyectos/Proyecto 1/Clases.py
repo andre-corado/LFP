@@ -90,7 +90,7 @@ class Aritmeticas(Expression):
                 # return izq ** der
             elif self.tipo == Operador.MODULO:
                 return generador.addExpresion(izq, der, '%') if getER else izq % der
-                # return izq % der
+                # return izq % derS
             elif self.tipo == Operador.RAIZ:
                 return generador.addExpresion(izq, der, 'raiz') if getER else izq ** (1 / der)
                 # return izq**(1/der)

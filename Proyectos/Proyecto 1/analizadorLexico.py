@@ -26,6 +26,7 @@ tokens = (
     'RRAIZ',
     'RSENO',
     'RCOSENO',
+    'RMOD',
     'RTANGENTE',
     'RESCRIBIR',
     'LLAA',
@@ -66,6 +67,7 @@ t_RSUMA = r'SUMA'
 t_RRESTA = r'RESTA'
 t_RMULTIPLICACION = r'MULTIPLICACION'
 t_RDIVISION = r'DIVISION'
+t_RMOD=r'MOD'
 t_RINVERSO = r'INVERSO'
 t_RPOTENCIA = r'POTENCIA'
 t_RRAIZ = r'RAIZ'
@@ -286,6 +288,7 @@ def p_tipo(t):
             |   RSENO
             |   RCOSENO
             |   RTANGENTE
+            |   RMOD
     '''
     if t[1] == 'SUMA':
         t[0] = Operador.SUMA
@@ -307,6 +310,8 @@ def p_tipo(t):
         t[0] = Operador.COSENO
     elif t[1] == 'TANGENTE':
         t[0] = Operador.TANGENTE
+    elif t[1] == 'MOD':
+        t[0] = Operador.MODULO
 
 
 # Aqui reconoce un error de sintaxis, pueden crear un array e irlos agregando
@@ -344,9 +349,6 @@ def analizar(texto):
     errores_ = []
     input = texto
     variable = parse(input)
-    getER = True
-
-    generarReportes()
 
     if variable:
         for var in variable:
@@ -361,6 +363,8 @@ def analizar(texto):
     for var in errores_:
         print(var.toString())
 
+    generarReportes()
+
 
 def generarReportes():
     # Errores
@@ -371,6 +375,12 @@ def generarReportes():
         num += 1
         html += '''<table border="1" style="height: 45px; width: 84.2478%; border-collapse: collapse; margin-left: auto; margin-right: auto;">
 <tbody>'''
+        html += '''<tr style="height: 18px;"><td style="width: 20%s; text-align: center; height: 18px;">No.</td>
+        <td style="width: 20%ds; text-align: center; height: 18px;">Lexema</td>
+        <td style="width: 20%ds; text-align: center; height: 18px;">Tipo</td>
+        <td style="width: 20%; text-align: center; height: 18px;">Columna</td>
+        <td style="width: 20%; text-align: center; height: 18px;">Fila</td>
+        </tr>'''
         for error in errores_:
             html += '''<tr style="height: 18px;">
 <td style="width: 20%s; text-align: center; height: 18px;">''' + str(num) + '''</td>
@@ -389,74 +399,47 @@ def generarReportes():
 
     # Resultados
     html2 = ''
+    html2 += '<p style="text-align: center;">' + 'Operaciones' +  '<span style="font-size: 20pt; color: red;"></span></p>'
     contador = 0
     variable = parse(input)
-    if variable:
-        txtTitulo = colorTitulo = sizeTitulo = colorDesc = sizeDesc = colorContenido = sizeContenido = texto = None
-        for var in variable:
-            if isinstance(var, Texto):
-                texto = var.ejecutar(False)
-            elif isinstance(var, Funcion):
-                datosVar = var.ejecutar(False)
-                x2 = {'TEXTO', 'TIPO'}
-                x2 ^= datosVar
-                txtTitulo = x2.pop()
-                print(txtTitulo)
+    txtTitulo = colorTitulo = sizeTitulo = colorDesc = sizeDesc = colorContenido = sizeContenido = texto = None
+    for var in variable:
+        if isinstance(var, list):
+            for var_ in var:
+                if not(isinstance(var_, Aritmeticas)):
+                    listaVar = var_.ejecutar(False)
+                    if 'Titulo' in listaVar:
+                        x2 = {'Titulo'}
+                        x2 ^= listaVar
+                        for x in x2:
+                            if isinstance(x, str):
+                                colorTitulo = traducirColor(x)
+                            else:
+                                sizeTitulo = str(x)
+                    elif 'Descripcion' in listaVar:
+                        x2 = {'Descripcion'}
+                        x2 ^= listaVar
+                        for x in x2:
+                            if isinstance(x, str):
+                                colorDesc = traducirColor(x)
+                            else:
+                                sizeDesc = str(x)
+                    elif 'Contenido' in listaVar:
+                        x2 = {'Contenido'}
+                        x2 ^= listaVar
+                        for x in x2:
+                            if isinstance(x, str):
+                                colorContenido = traducirColor(x)
+                            else:
+                                sizeContenido = str(x)
 
-            elif isinstance(var, list):
-                ''' for var_ in var:
-                                   if datosVar[3] == 'Titulo':
-                    colorTitulo = traducirColor(datosVar[1])
-                    sizeTitulo = str(datosVar[2])
-                elif datosVar[3] == 'Contenido':
-                    colorContenido = traducirColor(datosVar[1])
-                    sizeContenido = str(datosVar[2])
-                elif datosVar[2] == 'Descripcion':
-                    colorDesc = traducirColor(datosVar[1])
-                    sizeDesc = str(datosVar[2])'''
-                pass
-        html2 += '<p style="text-align: center;">' + txtTitulo + '<span style="font-size: ' + '16' + 'pt; color: ' + 'red' + ';"></span></p>'
-        for var in variable:
-            if isinstance(var, list):
-                for var_ in var:
-                    if (isinstance(var_, Estilo)):
-                        if 'Titulo' in var:
-                            datosVar = var_.ejecutar(False)
-                            datosVar.remove('Titulo')
-                            for x in datosVar:
-                                if (isinstance(x,str)):
-                                    colorTitulo = traducirColor(x)
-                                else:
-                                    sizeTitulo = str(x)
-                        elif 'Descripcion' in var:
-                            datosVar = var_.ejecutar(False)
-                            datosVar.remove('Descripcion')
-                            for x in datosVar:
-                                if (isinstance(x,str)):
-                                    colorDesc = traducirColor(x)
-                                else:
-                                    sizeDesc = str(x)
-                        elif 'Contenido' in var:
-                            datosVar = var_.ejecutar(False)
-                            datosVar.remove('Contenido')
-                            for x in datosVar:
-                                if (isinstance(x, str)):
-                                    colorContenido = traducirColor(x)
-                                else:
-                                    sizeContenido = str(x)
-                    else:
-                        pass
-        for var in variable:
-            if isinstance(var, list):
-                for var_ in var:
-                    if (isinstance(var_, Estilo)):
-                        pass
-                    else:
-                        contador += 1
-                        html2 += '<p style="text-align: center;">' + 'Operación No.' + str(contador) + '<span style="font-size: ' + sizeContenido + 'pt; color: ' + colorContenido + ';"></span></p>'
-                        html2 += '<p style="text-align: center;">' + str(var_.ejecutar(True)) + ' = ' + str(var_.ejecutar(False)) + '<span style="font-size: ' + sizeContenido + 'pt; color: ' + colorContenido + ';">sad</span></p>'
-
-
+    for var in variable:
+        if isinstance(var, list):
+            for var_ in var:
+                if isinstance(var_, Aritmeticas):
+                    contador += 1
+                    html2 += '<p style="text-align: center;">' + 'Operación No.' + str(contador) + '<span style="font-size:12pt; color: blue;"></span></p>'
+                    html2 += '<p style="text-align: center;">' + str(var_.ejecutar(True)) + ' = ' + str(var_.ejecutar(False)) + '<span style="font-size: 12pt; color: blue;"></span></p>'
 
 
     f = open('RESULTADOS_202100154.html', 'w')

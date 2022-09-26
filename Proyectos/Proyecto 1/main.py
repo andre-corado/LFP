@@ -48,7 +48,7 @@ class Ventana:
         self.ayudaMenu.add_command(label="Temas de Ayuda", font=("Roboto", 25), command=self.infoAutor)
         self.menubar.add_cascade(label="Ayuda", menu=self.ayudaMenu, font=("Roboto", 25))
         self.menubar.add_separator()
-        self.menubar.add_command(label="Salir", command=quit, font=("Roboto", 25))
+        self.menubar.add_command(label="Salir", command=self.salir, font=("Roboto", 25))
         self.menu.add_cascade(label="Menu", menu=self.menubar)
         # Editor de Texto
         self.editorTexto = Text(self.ventana, font=('Fira Mono Regular', 14), width=90, height=25, borderwidth=10,
@@ -59,10 +59,13 @@ class Ventana:
         self.nombreArchivo.config(text='ARCHIVO SIN NOMBRE')
         self.nombreArchivo.place(x=50, y=50)
 
+    def salir(self):
+        self.ventana.destroy()
+
     def abrir(self):
         ruta = filedialog.askopenfilename(initialdir="C:/Users/SergioLima/Downloads",
                                           title="Selecciona un archivo:",
-                                          filetypes=(("TXT files", "*.txt*"), ("All files", "*.*")), )
+                                          filetypes=(("LFP files", "*.lfp*"), ("All files", "*.*")), )
         self.ruta = ruta
         try:
             f = open(ruta, 'rt')
